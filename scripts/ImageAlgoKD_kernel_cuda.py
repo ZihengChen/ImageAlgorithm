@@ -16,24 +16,15 @@ mod = SourceModule("""
 
         if( i < nPoints ) {
             
-            // const int dim = kPoints;
-            // float pointi[dim];
-            float * pointi;
-
-            for (int k = 0; k<kPoints; k++){
-                pointi[k] = d_Points[idx_point + k];
-            }
-        
-            
-            // loop over all points to calculate rho
             float rhoi = 0.0;
-            
+
+            // loop over all points to calculate rho
             for (int j=0; j<nPoints; j++){
 
                 float dr = 0;
 
                 for (int k = 0; k < kPoints; k++){
-                    dr += pow( d_Points[ j*kPoints + k] - pointi[k] , 2) ;
+                    dr += pow( d_Points[ j*kPoints + k] - d_Points[idx_point + k] , 2) ;
                 }
                 dr = sqrt(dr);
                 
@@ -60,14 +51,6 @@ mod = SourceModule("""
 
         if( i < nPoints ) {
 
-            // const int dim = kPoints;
-            // float pointi[dim];
-            float * pointi;
-
-            for (int k = 0; k<kPoints; k++){
-                pointi[k] = d_Points[idx_point + k];
-            }
-
             float rhoi = d_rho[i];
 
             // loop over other points to calculate rhorank, nh,nhd
@@ -84,7 +67,7 @@ mod = SourceModule("""
                 // find nh and nhd
                 float dr = 0;
                 for (int k = 0; k < kPoints; k++){
-                    dr += pow( d_Points[ j*kPoints + k] - pointi[k] , 2) ;
+                    dr += pow( d_Points[ j*kPoints + k] - d_Points[idx_point + k] , 2 ) ;
                 }
                 dr = sqrt(dr);
 

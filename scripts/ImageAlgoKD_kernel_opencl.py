@@ -17,7 +17,7 @@ def openclKernel(DeviceID=0):
      
     __kernel void rho_opencl(   __global float *d_rho,
                                 __global float *d_Points, __global float *d_wPoints,
-                                int nPoints, int kPoints, float KERNEL_R, float KERNEL_R_NORM, float KERNEL_R_POWER
+                                const int nPoints, const int kPoints, float KERNEL_R, float KERNEL_R_NORM, float KERNEL_R_POWER
                                 )
     {
         int i = get_group_id(0)*get_local_size(0)+get_local_id(0);
@@ -25,24 +25,15 @@ def openclKernel(DeviceID=0):
 
         if( i < nPoints ) {
             
-            // const int dim = kPoints;
-            float pointi[2];
-            // float * pointi;
-
-            for (int k = 0; k<kPoints; k++){
-                pointi[k] = d_Points[idx_point + k];
-            }
-    
-
-            // loop over all points to calculate rho
             float rhoi = 0.0;
             
+            // loop over all points to calculate rho
             for (int j=0; j<nPoints; j++){
 
                 float dr = 0;
 
                 for (int k = 0; k < kPoints; k++){
-                    dr += pow( d_Points[ j*kPoints + k] - pointi[k] , 2) ;
+                    dr += pow( d_Points[ j*kPoints + k] - d_Points[idx_point + k] , 2) ;
                 }
                 dr = sqrt(dr);
                 
@@ -72,21 +63,13 @@ def openclKernel(DeviceID=0):
     __kernel void rhoranknh_opencl( __global int *d_rhorank, __global int *d_nh, __global float *d_nhd,
                                     // input parameters
                                     __global float *d_Points, __global float *d_rho,
-                                    int nPoints, int kPoints, float MAXDISTANCE
+                                    const int nPoints, int kPoints, float MAXDISTANCE
                                     )
     {
         int i = get_group_id(0)*get_local_size(0)+get_local_id(0);
         int idx_point = i * kPoints;
 
         if( i < nPoints ) {
-
-            // const int dim = kPoints;
-            float pointi[2];
-            //float * pointi;
-
-            for (int k = 0; k<kPoints; k++){
-                pointi[k] = d_Points[idx_point + k];
-            }
 
             float rhoi = d_rho[i];
             
@@ -104,7 +87,7 @@ def openclKernel(DeviceID=0):
                 // find nh and nhd
                 float dr = 0;
                 for (int k = 0; k < kPoints; k++){
-                    dr += pow( d_Points[ j*kPoints + k] - pointi[k] , 2) ;
+                    dr += pow( d_Points[ j*kPoints + k] - d_Points[idx_point + k] , 2 ) ;
                 }
                 dr = sqrt(dr);
 
