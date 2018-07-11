@@ -51,36 +51,42 @@ mod = SourceModule("""
 
         if( i < nPoints ) {
 
-            float rhoi = d_rho[i];
-
-            // loop over other points to calculate rhorank, nh,nhd
+            float rhoi   = d_rho[i];
             int rhoranki = 0;
             int nhi      = i;
             float nhdi   = MAXDISTANCE;
             
+            // loop over other points to calculate rhorank, nh,nhd
             for (int j=0; j<nPoints; j++){
                 // calculate rhorank
-                if( d_rho[j]>rhoi ) rhoranki++;
-                else if ( (d_rho[j]==rhoi) && (j>i)) rhoranki++;
+                if( d_rho[j]>rhoi )
+                    rhoranki++;
+
+                else if ( (d_rho[j]==rhoi) && (j>i)) 
+                    // if same rho, by definition, larger index has higher rho
+                    rhoranki++;
                 
                 
                 // find nh and nhd
-                float dr = 0;
-                for (int k = 0; k < kPoints; k++){
-                    dr += pow( d_Points[ j*kPoints + k] - d_Points[idx_point + k] , 2 ) ;
-                }
-                dr = sqrt(dr);
+                
+                // if higher, larger index has higher rho
+                bool isHigher = d_rho[j]>rhoi || (d_rho[j]==rhoi && j>i) ; 
+                if (isHigher){
+                    float dr = 0;
+                    for (int k = 0; k < kPoints; k++){
+                        dr += pow( d_Points[ j*kPoints + k] - d_Points[ idx_point + k] , 2 ) ;
+                    }
+                    dr = sqrt(dr);
 
-                // if nearer AND higher rho
-                
-                bool isNearer = dr<nhdi ;
-                bool isHigher = d_rho[j]>rhoi || (d_rho[j]==rhoi && j>i) ;
-                if ( isNearer && isHigher ){ 
-                    nhdi = dr;
-                    nhi  = j;
+                    // if nearer                
+                    if ( dr<nhdi ){ 
+                        nhdi = dr;
+                        nhi  = j;
+                    }
                 }
+            
             }
-                
+
             d_rhorank[i] = rhoranki;
             d_nh[i]      = nhi;
             d_nhd[i]     = nhdi;        

@@ -1,6 +1,7 @@
 from pylab import *
 import pandas as pd
 from DataStructure import *
+from timeit import default_timer as timer
 
 cudaIsAvailable = True
 openclIsAvailable = True
@@ -45,16 +46,25 @@ class ImageAlgoKD():
 
     def run(self, method="numpy", deviceID=0, blockSize=1):
         self.points.reset()
+        start = timer()
         # get decision variables
         if   (method == "cuda")   & cudaIsAvailable:
             self.getDecisionVariables_cuda(blockSize)
+            self.method = "cuda"
         elif (method == "opencl") & openclIsAvailable:
             self.getDecisionVariables_opencl(deviceID,blockSize)
+            self.method = "opencl"
         else:
             self.getDecisionVariables_numpy()
+            self.method = "numpy"
+        print("clustering finished!")
+        end = timer()
+
         # make clusters
         self.getClusteringResults()
-        print("clustering finished!")
+
+        print("Total time with {} is {:7.4f} ms".format(self.method, (end-start)*1000)  )
+        self.runtime = end-start
     
 
 
