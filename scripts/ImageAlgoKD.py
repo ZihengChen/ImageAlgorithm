@@ -168,8 +168,8 @@ class ImageAlgoKD():
         rhoranknh_cuda( d_rhorank, d_nh, d_nhd, d_cords, d_rho,
                         # algorithm paramters
                         n, k, self.MAXDISTANCE,
-                        grid  = int(n/blockSize)+1,
-                        block = int(blockSize) )
+                        grid  = (int(n/blockSize)+1,1,1),
+                        block = (int(blockSize),1,1) )
 
         # copy memery from device to host
         cuda.memcpy_dtoh(self.points.rho,d_rho)
