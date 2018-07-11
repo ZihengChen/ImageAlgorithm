@@ -162,8 +162,8 @@ class ImageAlgoKD():
         rho_cuda(   d_rho, d_cords, d_wegiths,
                     # algorithm parameters
                     n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER,
-                    grid  = int(n/blockSize)+1,
-                    block = int(blockSize) )
+                    grid  = (int(n/blockSize)+1,1,1),
+                    block = (int(blockSize),1,1) )
 
         rhoranknh_cuda( d_rhorank, d_nh, d_nhd, d_cords, d_rho,
                         # algorithm paramters
