@@ -29,8 +29,10 @@ mod = SourceModule("""
                 dr = sqrt(dr);
                 
                 if (dr<KERNEL_R){
-                    // float expWeight = exp(- pow(dr/KERNEL_R_NORM, KERNEL_R_POWER) );
-                    rhoi += d_wPoints[j] ;
+                    float expWeight = 1.0;
+                    if (KERNEL_R_POWER != 0)
+                        expWeight = exp(- pow(dr/KERNEL_R_NORM, KERNEL_R_POWER) );
+                    rhoi += d_wPoints[j] * expWeight;
                 }
             }
 

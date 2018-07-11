@@ -206,10 +206,11 @@ class ImageAlgoKD():
         for i in range(n):
             dr = self.norm2Distance(self.points.cords, self.points.cords[i])
             local = (dr<self.KERNEL_R)
-            irho = np.sum( self.points.weights[local] * np.exp( - (dr[local]/self.KERNEL_R_NORM)**self.KERNEL_R_POWER ))
-            irho = np.sum( self.points.weights[local] )
+            if self.KERNEL_R_POWER != 0:
+                irho = np.sum( self.points.weights[local] * np.exp( - (dr[local]/self.KERNEL_R_NORM)**self.KERNEL_R_POWER ))
+            else:
+                irho = np.sum( self.points.weights[local] )
             rho.append(irho)
-
         rho = np.array(rho)
 
         # find rhorank
