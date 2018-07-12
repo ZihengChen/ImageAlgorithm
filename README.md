@@ -9,8 +9,8 @@ This Repository is an implementation of Image Algorithm, supporting strong GPU a
 | backend | dependency | Support Platform | Support Device |
 | :---: | :---: | :---: | :---: |
 | [`numpy`](http://www.numpy.org) | None | Mac/Linux/Windows | CPU |
-| [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | pycuda | Linux | Only NVidia GPU |
-| [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | pyopencl | Mac | NVidia/AMD/Intel GPU, multi-core CPU |
+| [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | pycuda | Linux | Only NVIDIA GPU |
+| [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | pyopencl | Mac | NVIDIA/AMD/Intel GPU, multi-core CPU |
 
 It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm).
 
