@@ -4,7 +4,7 @@
 Image Algorithm is a clustering algorithm based [fast search and find of density peaks](http://science.sciencemag.org/content/344/6191/1492). 
 Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable.
 
-This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. For now, the implementation includes three backends, numpy, CUDA and OpenCL.
+This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. For now, the implementation includes three backends: numpy, CUDA and OpenCL.
 
 | backend | dependency | Support Platform | Support Device |
 | :---: | :---: | :---: | :---: |
@@ -49,8 +49,18 @@ ia.points.clusterID
 
 ## Examples
 
-#### Basic
-<p align=center><img width="80%" src="plots/basic.png" /></p>
+#### (I) Basic
+Perform IA clustering on 1000 toy 2D points, sampled from two Gaussian Distrituion and noise.
+<p align=center><img width="60%" src="plots/basic.png" /></p>
+The toy data is in */data/basic.csv*, while the corresponding jupyter notebook can be found [here](/example/example_basic.ipynb) in */examples/*.
 
-#### MNIST
-<p align=center><img width="20%" src="plots/mnist_decision.png" /></p> <p align=center><img width="40%" src="plots/mnist.png" /></p>
+#### (II) MNIST
+Perform IA clustering on 1000 MNIST 28x28 dimension points. 
+<p align=center> 
+  <img width="40%" src="plots/mnist_decision.png" /> 
+  <img width="45%" src="plots/mnist.png" />
+</p> 
+The MNIST data is in */data/mnist.csv*, while the corresponding jupyter notebook can be found [here](/example/example_mnist.ipynb) in */examples/*.
+
+#### (III) HGCal
+
