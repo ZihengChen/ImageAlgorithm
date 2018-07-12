@@ -66,5 +66,5 @@ Perform IA clustering on 1000 MNIST 28x28 dimension points. The MNIST data is in
 
 <p align=center><img width="50%" src="plots/hgcal.png" /></p> 
 
-This is an 300GeV pion with PU200 event in CMS HGCal. This event includes about 200k HGVCal reconstructed detector hits, which is input into IA clustering. For this example, an 3D interactive visualization can be found [here](https://plot.ly/%7Ezihengchen/18/#/)
+This is an event of 10 Pions with 300 GeV energy in CMS HGCal. A 3D interactive visualization can be found [here](https://plot.ly/~zihengchen/61/#/). In addition, for event with pile up, [here](https://plot.ly/%7Ezihengchen/18/#/) is an 300GeV pion with PU200 event. A PU200 event typically includes about 200k HGVCal reconstructed detector hits, which is input into IA clustering
 
