@@ -53,7 +53,7 @@ ia.points.clusterID
 
 <p align=center><img width="60%" src="plots/basic.png" /></p>
 
-Perform IA clustering on 1000 toy 2D points, sampled from two Gaussian Distrituion and noise. The toy data is in `/data/basic.csv`, while the corresponding jupyter notebook can be found [here](/example/example_basic.ipynb) in `/examples/`.
+Perform IA clustering on 1000 toy 2D points, sampled from two Gaussian Distrituion and noise. The toy data is in `data/basic.csv`, while the corresponding jupyter notebook can be found [here](/example/example_basic.ipynb) in `examples/`.
 
 ### II. MNIST
 <p align=center> 
