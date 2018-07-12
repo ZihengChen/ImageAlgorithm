@@ -49,12 +49,12 @@ ia.points.clusterID
 
 ## Examples
 
-#### (I) Basic
+#### I. Basic
 Perform IA clustering on 1000 toy 2D points, sampled from two Gaussian Distrituion and noise.
 <p align=center><img width="60%" src="plots/basic.png" /></p>
 The toy data is in `/data/basic.csv`, while the corresponding jupyter notebook can be found [here](/example/example_basic.ipynb) in `/examples/`.
 
-#### (II) MNIST
+#### II. MNIST
 Perform IA clustering on 1000 MNIST 28x28 dimension points. 
 <p align=center> 
   <img width="40%" src="plots/mnist_decision.png" /> 
@@ -62,5 +62,10 @@ Perform IA clustering on 1000 MNIST 28x28 dimension points.
 </p> 
 The MNIST data is in `/data/mnist.csv`, while the corresponding jupyter notebook can be found [here](/example/example_mnist.ipynb) in `/examples/`.
 
-#### (III) HGCal
+#### III. HGCal
+This is an 300GeV pion with PU200 event in CMS HGCal. This event includes about 200k HGVCal reconstructed detector hits, which is input into IA clustering.
+
+<p align=center><img width="50%" src="plots/hgcal.png" /></p> 
+
+For this example, an 3D interactive visualization can be found [here](https://plot.ly/%7Ezihengchen/18/#/)
 
