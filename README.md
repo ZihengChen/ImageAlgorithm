@@ -1,24 +1,22 @@
 # ImageAlgorithm
 
 
-# ImageAlgorithm
-
 Image Algorithm is a clustering algorithm based [fast search and find of density peaks](http://science.sciencemag.org/content/344/6191/1492). 
 Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable.
 
-This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. It has three backends, [numpy](http://www.numpy.org), [cuda](https://en.wikipedia.org/wiki/CUDA), [openCL](https://en.wikipedia.org/wiki/OpenCL).
+This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. For now, the implementation includes three backends, [numpy](http://www.numpy.org), [CUDA](https://en.wikipedia.org/wiki/CUDA), [OpenCL](https://en.wikipedia.org/wiki/OpenCL).
 
 | backend | dependency | Support Platform | Support Device |
-| --- | --- | --- | --- |
-| numpy | None | Mac/Linux/Windows | CPU |
-| CUDA | pycuda | Linux | NVidia GPU |
-| OpenCL | pyopencl | Mac | NVidia/AMD/Intel GPU, multi-core CPU |
+| :---: | :---: | :---: | :---: |
+| **numpy** | None | Mac/Linux/Windows | CPU |
+| **CUDA** | pycuda | Linux | Only NVidia GPU |
+| **OpenCL** | pyopencl | Mac | NVidia/AMD/Intel GPU, multi-core CPU |
 
-It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever backend faster and easier for their purpose. Concerning speed, acceleration from CUDA/OpenCL can give an up to x20 speed up when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here] (https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm/).
+It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here] (https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm/).
 
 
 ## Quick Start
-No dependency is required for numpy backend. For small dataset, this usually does a good job. However, for users wanting to use GPU acceleration with either CUDA or OpenCL backend, extra dependency is required. 
+No dependency is required for numpy backend. And it usually does a good job dealing with small dataset. However, for users wanting to use GPU acceleration with either CUDA or OpenCL backend, extra dependency is required. 
 ```bash
 # if want to use opencl backend
 pip install pyopencl
@@ -27,7 +25,7 @@ pip install pycuda
 ```
 
 The primary usage of the module is the following
-import ImageAlgo class for K-Dimension
+First of all, import ImageAlgo class for K-Dimension
 ```python
 from ImageAlgoKD import *
 ```
@@ -53,3 +51,7 @@ ia.points.clusterID
 
 #### Basic
 <p align=center><img width="80%" src="plots/basic.png" /></p>
+
+#### MNIST
+<p align=center><img width="20%" src="plots/mnist_decision.png" /></p>
+<p align=center><img width="40%" src="plots/mnist.png" /></p>
