@@ -4,15 +4,15 @@
 Image Algorithm is a clustering algorithm based [fast search and find of density peaks](http://science.sciencemag.org/content/344/6191/1492). 
 Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable.
 
-This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. For now, the implementation includes three backends, [numpy](http://www.numpy.org), [CUDA](https://en.wikipedia.org/wiki/CUDA), [OpenCL](https://en.wikipedia.org/wiki/OpenCL).
+This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. For now, the implementation includes three backends, numpy, CUDA and OpenCL.
 
 | backend | dependency | Support Platform | Support Device |
 | :---: | :---: | :---: | :---: |
-| **numpy** | None | Mac/Linux/Windows | CPU |
-| **CUDA** | pycuda | Linux | Only NVidia GPU |
-| **OpenCL** | pyopencl | Mac | NVidia/AMD/Intel GPU, multi-core CPU |
+| [`numpy`](http://www.numpy.org) | None | Mac/Linux/Windows | CPU |
+| [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | pycuda | Linux | Only NVidia GPU |
+| [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | pyopencl | Mac | NVidia/AMD/Intel GPU, multi-core CPU |
 
-It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here] (https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm/).
+It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm).
 
 
 ## Quick Start
@@ -53,5 +53,4 @@ ia.points.clusterID
 <p align=center><img width="80%" src="plots/basic.png" /></p>
 
 #### MNIST
-<p align=center><img width="20%" src="plots/mnist_decision.png" /></p>
-<p align=center><img width="40%" src="plots/mnist.png" /></p>
+<p align=center><img width="20%" src="plots/mnist_decision.png" /></p> <p align=center><img width="40%" src="plots/mnist.png" /></p>
