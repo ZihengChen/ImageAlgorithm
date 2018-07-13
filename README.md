@@ -13,8 +13,15 @@ Comparing with other popular clustering methods, such as DBSCAN,  one of the mos
 It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm).
 
 
-## Quick Start
-No dependency is required for numpy backend. And it usually does a good job dealing with small dataset. However, for users wanting to use GPU acceleration with either CUDA or OpenCL backend, extra dependency is required. 
+## Installation 
+
+
+```bash
+pip install ImageAlgoKD
+```
+
+Regarding dependency, no dependency is required for numpy backend. And it usually does a good job dealing with small dataset and needs no extra packages. However, for users wanting to use GPU acceleration with either CUDA or OpenCL backend, extra dependency is required. 
+
 ```bash
 # if want to use opencl backend
 pip install pyopencl
@@ -22,6 +29,7 @@ pip install pyopencl
 pip install pycuda
 ```
 
+## Quick Start
 The primary usage of the module is the following
 First of all, import ImageAlgo class for K-Dimension
 ```python

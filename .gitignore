@@ -1,5 +1,8 @@
 .DS_Store 
 */.DS_Store 
-
-scripts/__pycache__
+build
+dist
+ImageAlgoKD.egg-info
+*/__pycache__
 examples/.ipynb_checkpoints
+
