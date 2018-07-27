@@ -54,6 +54,7 @@ ia.points.clusterID
 ```
 
 ## Algorithm Parameters
+
 |     Parameters     | Comments                                                       | Default Value |
 |:------------------:|----------------------------------------------------------------|:-------------:|
 |     MAXDISTANCE    | the separation distance of the point with highest density.     |      10.0     |
@@ -63,6 +64,10 @@ ia.points.clusterID
 | DECISION_RHO_KAPPA | the ratio of density threshold of seeds to the highest density |      4.0      |
 |    DECISION_NHD    | the separation threshold of seeds                              |      1.0      |
 |   CONTINUITY_NHD   | the separation threshold of continuous clusters                |      1.0      |
+
+where density is defined as
+
+<p align=center><img width="20%" src="plots/density.png" /></p> 
 
 ## Examples
 
