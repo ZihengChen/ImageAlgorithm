@@ -53,6 +53,17 @@ In the end, the clustering result can be access by
 ia.points.clusterID
 ```
 
+## Algorithm Parameters
+|     Parameters     | Comments                                                       | Default Value |
+|:------------------:|----------------------------------------------------------------|:-------------:|
+|     MAXDISTANCE    | the separation distance of the point with highest density.     |      10.0     |
+|      KERNEL_R      | 'd_c' in density calculation                                   |      1.0      |
+|    KERNEL_R_NORM   | 'd_0' in density calculation                                   |      1.0      |
+|   KERNEL_R_POWER   | 'k' in density calculation.                                    |      0.0      |
+| DECISION_RHO_KAPPA | the ratio of density threshold of seeds to the highest density |      4.0      |
+|    DECISION_NHD    | the separation threshold of seeds                              |      1.0      |
+|   CONTINUITY_NHD   | the separation threshold of continuous clusters                |      1.0      |
+
 ## Examples
 
 ### I. Basic
