@@ -2,7 +2,7 @@
 
 
 Image Algorithm is a clustering algorithm based [fast search and find of density peaks](http://science.sciencemag.org/content/344/6191/1492). 
-Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable. This Repository is an implementation of Image Algorithm, supporting strong GPU acceleration. For now, the implementation includes three backends: numpy, CUDA and OpenCL.
+Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable. This repository is an implementation of Image Algorithm for GENERAL purpose, supporting GPU acceleration. For now, the implementation includes three backends: numpy, CUDA and OpenCL.
 
 | backend | dependency | Support Platform | Support Device |
 | :---: | :---: | :---: | :---: |
