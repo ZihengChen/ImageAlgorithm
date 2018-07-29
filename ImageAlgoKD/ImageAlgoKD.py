@@ -21,7 +21,7 @@ if cudaIsAvailable:
 
 if openclIsAvailable:
     from ImageAlgoKD_kernel_opencl import *
-    from utilities import openclInfo
+    from Utilities import openclInfo
 
 class ImageAlgoKD():
     def __init__(self,
@@ -54,9 +54,15 @@ class ImageAlgoKD():
         elif (method == "opencl") & openclIsAvailable:
             self.getDecisionVariables_opencl(deviceID,blockSize)
             self.method = "opencl"
+        
+        elif (method == "numpybin"): #& (self.points.k in [2,3,4]):
+            self.getDecisionVariables_numpybin()
+            self.method = "numpybin"
+
         else:
             self.getDecisionVariables_numpy()
             self.method = "numpy"
+
         print("clustering finished!")
         end = timer()
 
@@ -200,28 +206,33 @@ class ImageAlgoKD():
     def getDecisionVariables_numpy(self):
 
         n, k = self.points.n, self.points.k
-
+        ###########################
         # find rho 
+        ###########################
         rho = []
         for i in range(n):
-            dr = self.norm2Distance(self.points.cords, self.points.cords[i])
+            dr = self._norm2Distance(self.points.cords, self.points.cords[i])
             local = (dr<self.KERNEL_R)
-            if self.KERNEL_R_POWER != 0:
-                irho = np.sum( self.points.weights[local] * np.exp( - (dr[local]/self.KERNEL_R_NORM)**self.KERNEL_R_POWER ))
-            else:
+            if self.KERNEL_R_POWER == 0:
                 irho = np.sum( self.points.weights[local] )
+            else:
+                irho = np.sum( self.points.weights[local] * np.exp( - (dr[local]/self.KERNEL_R_NORM)**self.KERNEL_R_POWER ))
+    
             rho.append(irho)
         rho = np.array(rho)
 
+        ###########################
         # find rhorank
+        ###########################
         argsortrho = rho.argsort(kind='mergesort')[::-1]
         rhorank = np.empty(rho.size, int)
         rhorank[argsortrho] = np.arange(rho.size)
 
+        ###########################
         # find NearstHiger and distance to NearestHigher
+        ###########################
         nh,nhd = [],[]
         for i in range(n):
-            irho  = rho[i]
             irank = rhorank[i]
             
             higher = rhorank<irank
@@ -230,7 +241,7 @@ class ImageAlgoKD():
                 nh. append(i)
                 nhd.append(self.MAXDISTANCE)
             else:
-                drr  = self.norm2Distance(self.points.cords[higher], self.points.cords[i])
+                drr  = self._norm2Distance(self.points.cords[higher], self.points.cords[i])
                 temp = np.arange(rho.size)[higher]
                 nh. append(temp[np.argmin(drr)])
                 nhd.append(np.min(drr))
@@ -244,5 +255,193 @@ class ImageAlgoKD():
         self.points.nh  = nh
         self.points.nhd = nhd
 
-    def norm2Distance(self, p1,p2):
+
+
+
+    # def getDecisionVariables_openclbin(self, deviceID=0, blockSize=1):
+
+    #     context,prg = openclKernel(DeviceID=deviceID)
+    #     queue = cl.CommandQueue(context)
+
+    #     n, k = self.points.n, self.points.k
+
+    #     LOCALSIZE  = int(blockSize)
+    #     GLOBALSIZE = (int(n/LOCALSIZE)+1)*LOCALSIZE
+
+    #     # allocate memery on device for points and decision parameters
+    #     d_rho     = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.rho.nbytes)
+    #     d_rhorank = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.rhorank.nbytes)
+    #     d_nh      = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.nh.nbytes)
+    #     d_nhd     = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.nhd.nbytes)
+
+    #     # copy memergy to device
+    #     d_cords   = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.cords)
+    #     d_wegiths = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.weights)
+
+    #     # run KERNEL on device
+    #     prg.rho_opencl( queue, (GLOBALSIZE,), (LOCALSIZE,),
+    #                     d_rho, d_cords, d_wegiths,
+    #                     # algorithm parameters
+    #                     n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER
+    #                     )
+
+
+    #     prg.rhoranknh_opencl(   queue, (GLOBALSIZE,), (LOCALSIZE,),
+    #                             d_rhorank, d_nh, d_nhd, d_cords, d_rho,
+    #                             # algorithm paramters
+    #                             n, k, self.MAXDISTANCE
+    #                             )
+
+    #     # copy memery from device to host
+    #     cl.enqueue_copy(queue, self.points.rho, d_rho)
+    #     cl.enqueue_copy(queue, self.points.rhorank, d_rhorank)
+    #     cl.enqueue_copy(queue, self.points.nh, d_nh)
+    #     cl.enqueue_copy(queue, self.points.nhd, d_nhd)
+
+    #     # release globle memery on device
+    #     d_cords.release()
+    #     d_wegiths.release()
+    #     d_rho.release()
+    #     d_rhorank.release()
+    #     d_nh.release()
+    #     d_nhd.release()
+
+
+
+    def getDecisionVariables_numpybin(self):
+        '''
+        numpy for bined data
+        '''
+
+        n, k = self.points.n, self.points.k
+        self.points.binPoints(self.KERNEL_R)
+
+        ###########################
+        # find rho, O(n)
+        ###########################
+        rho = np.zeros(n)
+        # loop over location keys
+        for key in self.points.keys:
+            idxPoints,keyNeighbors = self.points.bins[key]
+            idxNeighbors = self.points.getIdxNeighbors(key)
+
+            # loop over points in the location key
+            for idxPoint in idxPoints:
+                icord   = np.take(self.points.cords,idxPoint,axis=0)
+                jcord   = np.take(self.points.cords,idxNeighbors,axis=0)
+                jweight = np.take(self.points.weights,idxNeighbors,axis=0)
+                # get density of the points and save to rho
+                dr = self._norm2Distance(icord,jcord)
+
+                local = dr<self.KERNEL_R
+                if self.KERNEL_R_POWER == 0:
+                    irho = np.sum( jweight[local] )
+                else:
+                    irho = np.sum(  weight[local] * np.exp( - (dr[local]/self.KERNEL_R_NORM)**self.KERNEL_R_POWER ))
+
+                rho[idxPoint] = irho
+
+        ###########################
+        # find rhorank, O(nlogn) based on mergesort
+        ###########################
+        argsortrho = rho.argsort(kind='mergesort')[::-1]
+        rhorank = np.empty(rho.size, int)
+        rhorank[argsortrho] = np.arange(rho.size)
+
+        ###########################
+        # find NearstHiger and distance to NearestHigher,O(mn)
+        ###########################
+        nh = np.arange(n)
+        nhd = np.zeros(n)
+        
+        self.nNNSearch, self.nGlobalSearch = 0,0
+
+        # loop over keys
+        for key in self.points.keys:
+            idxPoints,stencilKeys = self.points.bins[key]
+
+            # query neighers
+            idxNeighbors = self.points.getIdxNeighbors(key)
+            rhorankNeighbors = rhorank[idxNeighbors]
+            cordNeighbors = self.points.cords[idxNeighbors]
+            nNeighbors = len(idxNeighbors)
+
+            # nNeighors exit
+            # if nNeighbors > 1:
+
+            # loop over points in the key
+            for idxPoint in idxPoints:
+                irhorank = rhorank[idxPoint]
+                icord = self.points.cords[idxPoint]
+                
+                #isearchGlobal = True
+                # search NH in neighbors
+                higherInNeighbors = rhorankNeighbors < irhorank
+                if (True in higherInNeighbors):
+                    self.nNNSearch += 1
+                    #isearchGlobal = False
+
+
+                    dr = self._norm2Distance( icord, cordNeighbors[higherInNeighbors])
+                    idxHighers = np.arange(nNeighbors)[higherInNeighbors]
+
+                    inhd = np.min(dr)
+                    
+                    # requiring inhd in save area
+                    if inhd<self.KERNEL_R:
+                        #inh  = idxNeighbors[ idxHighers[np.argmin(dr)] ]
+                        inh = np.array(idxNeighbors)[ idxHighers[ np.argwhere(dr==inhd).reshape(-1) ] ].min()
+
+                        nh [idxPoint] = inh
+                        nhd[idxPoint] = inhd
+                    else:
+                        nh[idxPoint],nhd[idxPoint] = self._searchNHGlobal(idxPoint,rhorank)
+                
+                 # search NH in globe
+                else:
+                    nh[idxPoint],nhd[idxPoint] = self._searchNHGlobal(idxPoint,rhorank)
+
+                    # self.nGlobalSearch += 1
+                    # higher = rhorank < irhorank
+                    # # find higher
+                    # if (True in higher): 
+                    #     dr  = self._norm2Distance(self.points.cords[idxPoint],self.points.cords[higher])
+                    #     idxHighers = np.arange(self.points.n)[higher]
+                    #     nh[idxPoint]  = idxHighers[np.argmin(dr)]
+                    #     nhd[idxPoint] = np.min(dr)
+                    # # no higher are found
+                    # else:
+                    #     nh[idxPoint]= idxPoint
+                    #     nhd[idxPoint] = self.MAXDISTANCE
+
+
+
+        # save the decision variables to points
+        self.points.rho = rho
+        self.points.rhorank = rhorank
+        self.points.nh  = nh
+        self.points.nhd = nhd
+
+        self.effNN = self.nNNSearch/(self.nGlobalSearch+self.nNNSearch)
+
+
+    ## private functions
+    def _norm2Distance(self, p1,p2):
         return np.sqrt( np.sum((p1-p2)**2, axis=-1) )
+
+    def _searchNHGlobal(self,idxPoint,rhorank):
+        
+        self.nGlobalSearch += 1
+        higher = rhorank < rhorank[idxPoint]
+        # find higher
+        if (True in higher): 
+            dr  = self._norm2Distance(self.points.cords[idxPoint],self.points.cords[higher])
+            idxHighers = np.arange(self.points.n)[higher]
+            inh  = idxHighers[np.argmin(dr)]
+            inhd = np.min(dr)
+        # no higher are found
+        else:
+            inh = idxPoint
+            inhd = self.MAXDISTANCE
+
+        return inh,inhd

@@ -116,6 +116,7 @@ def openclKernel(DeviceID=0):
     }
 
     """
+    
     ).build()
     return context,prg
 
