@@ -14,15 +14,19 @@ For now, the implementation includes three backends: numpy, CUDA and OpenCL.
 
 For three backends, two kinds of data structure can be taken in. Flat list and KDBin. KDBins is based on hash map of spatial bins of points and nearest neighbors. Strong acceleration in density calculation is observed with KDBin.
 
-| backend | data structure for `rho` | data structure for `rhorank` and `nh` |
+| supported data structure |  `rho` Calculation | `rhorank` and `nh` Calculation |
 | :---: | :---: | :---: |
-| [`numpy`](http://www.numpy.org) | List/KDBin | List/KDBin |
-| [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | List/KDBin | List |
-| [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | List/KDBin | List |
+| [`numpy`](http://www.numpy.org) | list/kdbin | list/kdbin |
+| [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | list/kdbin | list |
+| [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | list/kdbin | list |
 
 It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm).
 
 
+To do list
+
+    * [ ] using 'Merge Sorted List' for `rhorank` calculation in CUDA/OpenCL
+    * [ ] support kdbin in `nh` calculation in CUDA/OpenCL
 
 
 ## Installation 
