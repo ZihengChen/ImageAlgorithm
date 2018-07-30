@@ -83,7 +83,7 @@ ia.points.clusterID
 
 where density is defined as
 
-<p align=center><img width="20%" src="plots/density.png" /></p> 
+<p align=center><img width="25%" src=https://github.com/ZihengChen/ImageAlgorithm/blob/master/plots/density.png /></p> 
 
 ## Examples
 
