@@ -170,4 +170,6 @@ mod = SourceModule("""
 )
 
 rho_cuda       = mod.get_function("rho_cuda")
+rho_cudabin    = mod.get_function("rho_cudabin")
 rhoranknh_cuda = mod.get_function("rhoranknh_cuda")
+

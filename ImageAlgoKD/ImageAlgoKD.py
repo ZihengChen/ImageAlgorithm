@@ -281,12 +281,12 @@ class ImageAlgoKD():
         d_cords   = cuda.mem_alloc(self.points.cords.nbytes)
         d_wegiths = cuda.mem_alloc(self.points.weights.nbytes)
 
-        d_nnbinHead = cuda.mem_alloc(self.points.point_idxNNBinsHead)
-        d_nnbinSize = cuda.mem_alloc(self.points.point_idxNNBinsSize)
-        d_nnbinList = cuda.mem_alloc(self.points.idxNNBinsList)
-        d_idxPointsHead = cuda.mem_alloc(self.points.bin_idxPointsHead)
-        d_idxPointsSize = cuda.mem_alloc(self.points.bin_idxPointsSize)
-        d_idxPonitsList = cuda.mem_alloc(self.points.idxPonitsList)
+        d_nnbinHead = cuda.mem_alloc(self.points.point_idxNNBinsHead.nbytes)
+        d_nnbinSize = cuda.mem_alloc(self.points.point_idxNNBinsSize.nbytes)
+        d_nnbinList = cuda.mem_alloc(self.points.idxNNBinsList.nbytes)
+        d_idxPointsHead = cuda.mem_alloc(self.points.bin_idxPointsHead.nbytes)
+        d_idxPointsSize = cuda.mem_alloc(self.points.bin_idxPointsSize.nbytes)
+        d_idxPonitsList = cuda.mem_alloc(self.points.idxPonitsList.nbytes)
 
 
         d_rho     = cuda.mem_alloc(self.points.rho.nbytes)
