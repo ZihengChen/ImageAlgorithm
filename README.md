@@ -89,14 +89,14 @@ where density is defined as
 
 ### I. Basic
 
-<p align=center><img width="60%" src="plots/basic.png" /></p>
+<p align=center><img width="60%" src=https://github.com/ZihengChen/ImageAlgorithm/blob/master/plots/basic.png   /></p>
 
 Perform IA clustering on 1000 toy 2D points, sampled from two Gaussian Distrituion and noise. The toy data is in `data/basic.csv`, while the corresponding jupyter notebook can be found [here](/example/example_basic.ipynb) in `examples/`.
 
 ### II. MNIST
 <p align=center> 
-  <img width="40%" src="plots/mnist_decision.png" /> 
-  <img width="45%" src="plots/mnist.png" />
+  <img width="40%" src=https://github.com/ZihengChen/ImageAlgorithm/blob/master/plots/mnist_decision.png /> 
+  <img width="45%" src=https://github.com/ZihengChen/ImageAlgorithm/blob/master/plots/mnist.png />
 </p> 
 
 Perform IA clustering on 1000 MNIST 28x28 dimension points. The MNIST data is in `data/mnist.csv`, while the corresponding jupyter notebook can be found [here](/example/example_mnist.ipynb) in `examples/`.
@@ -104,7 +104,8 @@ Perform IA clustering on 1000 MNIST 28x28 dimension points. The MNIST data is in
 ### III. HGCal
 
 
-<p align=center><img width="50%" src="plots/hgcal.png" /></p> 
+<p align=center><img width="50%" src=https://github.com/ZihengChen/ImageAlgorithm/blob/master/plots/hgcal.png /></p> 
 
 This is an event of 10 Pions with 300 GeV energy in CMS HGCal. A 3D interactive visualization can be found [here](https://plot.ly/~zihengchen/61/#/). In addition, for event with pile up, [here](https://plot.ly/%7Ezihengchen/18/#/) is an 300GeV pion with PU200 event. A PU200 event typically includes about 200k HGVCal reconstructed detector hits, which is input into IA clustering
+
 
