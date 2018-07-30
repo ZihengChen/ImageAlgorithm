@@ -104,6 +104,7 @@ def openclKernel(DeviceID=0):
                         if (KERNEL_R_POWER != 0)
                             expWeight = exp(- pow(dr/KERNEL_R_NORM, KERNEL_R_POWER) );
                         rhoi += d_wPoints[j] * expWeight;
+                        
                         ///////////////////////////////////////////////////
                         // some device does not support exp() function   //
                         // have to use Tylor expansion for exp() instead //

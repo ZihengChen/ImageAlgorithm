@@ -52,9 +52,9 @@ class ImageAlgoKD():
             self.getDecisionVariables_cuda(blockSize)
             self.method = "cuda"
         
-        elif (method == "openclbin") & openclIsAvailable:
+        elif (method == "cudabin") & cudaIsAvailable:
             self.getDecisionVariables_cudabin(blockSize)
-            self.method = "openclbin"
+            self.method = "cudabin"
 
         elif (method == "opencl") & openclIsAvailable:
             self.getDecisionVariables_opencl(deviceID,blockSize)
@@ -117,6 +117,53 @@ class ImageAlgoKD():
         self.points.isSeed    = isSeed
         self.points.clusterID = clusterID
 
+    def getDecisionVariables_cuda(self, blockSize=1024):
+
+        n, k = self.points.n, self.points.k
+        
+        # allocate memery on device for points and decision parameters
+        d_cords   = cuda.mem_alloc(self.points.cords.nbytes)
+        d_wegiths = cuda.mem_alloc(self.points.weights.nbytes)
+        d_rho     = cuda.mem_alloc(self.points.rho.nbytes)
+        d_rhorank = cuda.mem_alloc(self.points.rhorank.nbytes)
+        d_nh      = cuda.mem_alloc(self.points.nh.nbytes)
+        d_nhd     = cuda.mem_alloc(self.points.nhd.nbytes)
+
+        # copy memergy to device
+        cuda.memcpy_htod( d_cords  , self.points.cords )
+        cuda.memcpy_htod( d_wegiths, self.points.weights )
+
+        # run KERNEL on device
+        start = timer()
+        rho_cuda(   d_rho, d_cords, d_wegiths,
+                    # algorithm parameters
+                    n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER,
+                    grid  = (int(n/blockSize)+1,1,1),
+                    block = (int(blockSize),1,1) )
+
+        cuda.memcpy_dtoh(self.points.rho,d_rho)
+        end = timer()
+        self.rhotime = end-start
+
+        rhoranknh_cuda( d_rhorank, d_nh, d_nhd, d_cords, d_rho,
+                        # algorithm paramters
+                        n, k, self.MAXDISTANCE,
+                        grid  = (int(n/blockSize)+1,1,1),
+                        block = (int(blockSize),1,1) )
+
+        # copy memery from device to host
+        
+        cuda.memcpy_dtoh(self.points.rhorank,d_rhorank)
+        cuda.memcpy_dtoh(self.points.nh,d_nh)
+        cuda.memcpy_dtoh(self.points.nhd,d_nhd)
+        
+        # release globle memery on device
+        d_cords.free()
+        d_wegiths.free()
+        d_rho.free()
+        d_rhorank.free()
+        d_nh.free()
+        d_nhd.free()
 
 
     def getDecisionVariables_opencl(self, deviceID=0, blockSize=1):
@@ -168,57 +215,6 @@ class ImageAlgoKD():
         d_rhorank.release()
         d_nh.release()
         d_nhd.release()
-
-
-    def getDecisionVariables_cuda(self, blockSize=1024):
-
-        n, k = self.points.n, self.points.k
-        
-        # allocate memery on device for points and decision parameters
-        d_cords   = cuda.mem_alloc(self.points.cords.nbytes)
-        d_wegiths = cuda.mem_alloc(self.points.weights.nbytes)
-        d_rho     = cuda.mem_alloc(self.points.rho.nbytes)
-        d_rhorank = cuda.mem_alloc(self.points.rhorank.nbytes)
-        d_nh      = cuda.mem_alloc(self.points.nh.nbytes)
-        d_nhd     = cuda.mem_alloc(self.points.nhd.nbytes)
-
-        # copy memergy to device
-        cuda.memcpy_htod( d_cords  , self.points.cords )
-        cuda.memcpy_htod( d_wegiths, self.points.weights )
-
-        # run KERNEL on device
-        start = timer()
-        rho_cuda(   d_rho, d_cords, d_wegiths,
-                    # algorithm parameters
-                    n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER,
-                    grid  = (int(n/blockSize)+1,1,1),
-                    block = (int(blockSize),1,1) )
-
-        cuda.memcpy_dtoh(self.points.rho,d_rho)
-        end = timer()
-        self.rhotime = end-start
-
-        rhoranknh_cuda( d_rhorank, d_nh, d_nhd, d_cords, d_rho,
-                        # algorithm paramters
-                        n, k, self.MAXDISTANCE,
-                        grid  = (int(n/blockSize)+1,1,1),
-                        block = (int(blockSize),1,1) )
-
-        # copy memery from device to host
-        
-        cuda.memcpy_dtoh(self.points.rhorank,d_rhorank)
-        cuda.memcpy_dtoh(self.points.nh,d_nh)
-        cuda.memcpy_dtoh(self.points.nhd,d_nhd)
-        
-        # release globle memery on device
-        d_cords.free()
-        d_wegiths.free()
-        d_rho.free()
-        d_rhorank.free()
-        d_nh.free()
-        d_nhd.free()
-        
-
 
     def getDecisionVariables_numpy(self):
 
@@ -275,6 +271,77 @@ class ImageAlgoKD():
         self.points.rhorank = rhorank
         self.points.nh  = nh
         self.points.nhd = nhd
+
+
+    def getDecisionVariables_cudabin(self, blockSize=1024):
+
+        n, k = self.points.n, self.points.k
+        
+        # allocate memery on device for points and decision parameters
+        d_cords   = cuda.mem_alloc(self.points.cords.nbytes)
+        d_wegiths = cuda.mem_alloc(self.points.weights.nbytes)
+
+        d_nnbinHead = cuda.mem_alloc(self.points.point_idxNNBinsHead)
+        d_nnbinSize = cuda.mem_alloc(self.points.point_idxNNBinsSize)
+        d_nnbinList = cuda.mem_alloc(self.points.idxNNBinsList)
+        d_idxPointsHead = cuda.mem_alloc(self.points.bin_idxPointsHead)
+        d_idxPointsSize = cuda.mem_alloc(self.points.bin_idxPointsSize)
+        d_idxPonitsList = cuda.mem_alloc(self.points.idxPonitsList)
+
+
+        d_rho     = cuda.mem_alloc(self.points.rho.nbytes)
+        d_rhorank = cuda.mem_alloc(self.points.rhorank.nbytes)
+        d_nh      = cuda.mem_alloc(self.points.nh.nbytes)
+        d_nhd     = cuda.mem_alloc(self.points.nhd.nbytes)
+
+        # copy memergy to device
+        cuda.memcpy_htod( d_cords  , self.points.cords )
+        cuda.memcpy_htod( d_wegiths, self.points.weights )
+
+        cuda.memcpy_htod( d_nnbinHead, self.points.point_idxNNBinsHead )
+        cuda.memcpy_htod( d_nnbinSize, self.points.point_idxNNBinsSize )
+        cuda.memcpy_htod( d_nnbinList, self.points.idxNNBinsList )
+        cuda.memcpy_htod( d_idxPointsHead, self.points.bin_idxPointsHead )
+        cuda.memcpy_htod( d_idxPointsSize, self.points.bin_idxPointsSize )
+        cuda.memcpy_htod( d_idxPonitsList, self.points.idxPonitsList )
+
+        # run KERNEL on device
+        start = timer()
+        rho_cudabin(d_rho, d_cords, d_wegiths,
+                    d_nnbinHead,
+                    d_nnbinSize,
+                    d_nnbinList,
+                    d_idxPointsHead, 
+                    d_idxPointsSize,
+                    d_idxPonitsList,
+                    # algorithm parameters
+                    n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER,
+                    grid  = (int(n/blockSize)+1,1,1),
+                    block = (int(blockSize),1,1) )
+        
+        cuda.memcpy_dtoh(self.points.rho,d_rho)
+        end = timer()
+        self.rhotime = end-start
+
+        rhoranknh_cuda( d_rhorank, d_nh, d_nhd, d_cords, d_rho,
+                        # algorithm paramters
+                        n, k, self.MAXDISTANCE,
+                        grid  = (int(n/blockSize)+1,1,1),
+                        block = (int(blockSize),1,1) )
+
+        # copy memery from device to host
+        
+        cuda.memcpy_dtoh(self.points.rhorank,d_rhorank)
+        cuda.memcpy_dtoh(self.points.nh,d_nh)
+        cuda.memcpy_dtoh(self.points.nhd,d_nhd)
+        
+        # release globle memery on device
+        d_cords.free()
+        d_wegiths.free()
+        d_rho.free()
+        d_rhorank.free()
+        d_nh.free()
+        d_nhd.free()
 
 
     def getDecisionVariables_openclbin(self, deviceID=0, blockSize=1):
