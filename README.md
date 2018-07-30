@@ -2,7 +2,9 @@
 
 
 Image Algorithm is a clustering algorithm based [fast search and find of density peaks](http://science.sciencemag.org/content/344/6191/1492). 
-Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable. This repository is an implementation of Image Algorithm for general purpose, supporting GPU acceleration. For now, the implementation includes three backends: numpy, CUDA and OpenCL.
+Comparing with other popular clustering methods, such as DBSCAN,  one of the most prominent advantages of Image Algorithm is being highly parallelizable. This repository is an implementation of Image Algorithm for general purpose, supporting strong and easy GPU acceleration. 
+
+For now, the implementation includes three backends: numpy, CUDA and OpenCL.
 
 | backend | dependency | Support Platform | Support Device |
 | :---: | :---: | :---: | :---: |
@@ -10,7 +12,17 @@ Comparing with other popular clustering methods, such as DBSCAN,  one of the mos
 | [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | pycuda | Linux | Only NVIDIA GPU |
 | [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | pyopencl | Mac | NVIDIA/AMD/Intel GPU, multi-core CPU |
 
+For three backends, two kinds of data structure can be taken in. Flat list and KDBin. KDBins is based on hash map of spatial bins of points and nearest neighbors. Strong acceleration in density calculation is observed with KDBin.
+
+| backend | data structure for `rho` | data structure for `rhorank` and `nh` |
+| :---: | :---: | :---: |
+| [`numpy`](http://www.numpy.org) | List/KDBin | List/KDBin |
+| [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | List/KDBin | List |
+| [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | List/KDBin | List |
+
 It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm).
+
+
 
 
 ## Installation 
