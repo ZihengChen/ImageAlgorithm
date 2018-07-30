@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ImageAlgoKD",
-    version="0.0.2",
+    version="0.0.3",
     author="Ziheng Chen",
     author_email="zihengchen2015@u.northwestern.edu",
-    description="implementation of clustering by fast search and find density peak. Implementation is based on numpy, cuda and opencl",
+    description="GPU implementation of clustering by fast search and find density peak.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ZihengChen/ImageAlgorithm",
