@@ -24,9 +24,9 @@ It has been tested that all three backends give the identical clustering results
 
 
 To do list
-
-    * [ ] using 'Merge Sorted List' for `rhorank` calculation in CUDA/OpenCL
-    * [ ] support kdbin in `nh` calculation in CUDA/OpenCL
+    
+* [ ] Calculate `rhorank` in CUDA/OpenCL via 'Merge Sorted List' for parallel sorting.
+* [ ] Support `nh` search in nearest neighboring bins in CUDA/OpenCL
 
 
 ## Installation 
