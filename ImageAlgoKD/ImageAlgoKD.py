@@ -51,9 +51,18 @@ class ImageAlgoKD():
         if   (method == "cuda")   & cudaIsAvailable:
             self.getDecisionVariables_cuda(blockSize)
             self.method = "cuda"
+        
+        elif (method == "openclbin") & openclIsAvailable:
+            self.getDecisionVariables_cudabin(blockSize)
+            self.method = "openclbin"
+
         elif (method == "opencl") & openclIsAvailable:
             self.getDecisionVariables_opencl(deviceID,blockSize)
             self.method = "opencl"
+        
+        elif (method == "openclbin") & openclIsAvailable:
+            self.getDecisionVariables_openclbin(deviceID,blockSize)
+            self.method = "openclbin"
         
         elif (method == "numpybin"): #& (self.points.k in [2,3,4]):
             self.getDecisionVariables_numpybin()
@@ -69,10 +78,11 @@ class ImageAlgoKD():
         # make clusters
         self.getClusteringResults()
 
-        print("Total time with {} is {:7.4f} ms".format(self.method, (end-start)*1000)  )
+        # print timing
         self.runtime = end-start
+        print("Run time with {} is {:7.4f} ms, in which rho time is {:7.4f} ms".format(self.method, self.runtime*1000, self.rhotime*1000  ))
+        
     
-
 
     def getClusteringResults(self):
 
@@ -129,13 +139,16 @@ class ImageAlgoKD():
         d_cords   = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.cords)
         d_wegiths = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.weights)
 
+        start = timer()
         # run KERNEL on device
         prg.rho_opencl( queue, (GLOBALSIZE,), (LOCALSIZE,),
                         d_rho, d_cords, d_wegiths,
                         # algorithm parameters
                         n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER
                         )
-
+        cl.enqueue_copy(queue, self.points.rho, d_rho)
+        end = timer()
+        self.rhotime = end-start
 
         prg.rhoranknh_opencl(   queue, (GLOBALSIZE,), (LOCALSIZE,),
                                 d_rhorank, d_nh, d_nhd, d_cords, d_rho,
@@ -144,7 +157,6 @@ class ImageAlgoKD():
                                 )
 
         # copy memery from device to host
-        cl.enqueue_copy(queue, self.points.rho, d_rho)
         cl.enqueue_copy(queue, self.points.rhorank, d_rhorank)
         cl.enqueue_copy(queue, self.points.nh, d_nh)
         cl.enqueue_copy(queue, self.points.nhd, d_nhd)
@@ -175,11 +187,16 @@ class ImageAlgoKD():
         cuda.memcpy_htod( d_wegiths, self.points.weights )
 
         # run KERNEL on device
+        start = timer()
         rho_cuda(   d_rho, d_cords, d_wegiths,
                     # algorithm parameters
                     n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER,
                     grid  = (int(n/blockSize)+1,1,1),
                     block = (int(blockSize),1,1) )
+
+        cuda.memcpy_dtoh(self.points.rho,d_rho)
+        end = timer()
+        self.rhotime = end-start
 
         rhoranknh_cuda( d_rhorank, d_nh, d_nhd, d_cords, d_rho,
                         # algorithm paramters
@@ -188,7 +205,7 @@ class ImageAlgoKD():
                         block = (int(blockSize),1,1) )
 
         # copy memery from device to host
-        cuda.memcpy_dtoh(self.points.rho,d_rho)
+        
         cuda.memcpy_dtoh(self.points.rhorank,d_rhorank)
         cuda.memcpy_dtoh(self.points.nh,d_nh)
         cuda.memcpy_dtoh(self.points.nhd,d_nhd)
@@ -209,6 +226,7 @@ class ImageAlgoKD():
         ###########################
         # find rho 
         ###########################
+        start = timer()
         rho = []
         for i in range(n):
             dr = self._norm2Distance(self.points.cords, self.points.cords[i])
@@ -220,6 +238,9 @@ class ImageAlgoKD():
     
             rho.append(irho)
         rho = np.array(rho)
+
+        end = timer()
+        self.rhotime = end-start
 
         ###########################
         # find rhorank
@@ -256,56 +277,79 @@ class ImageAlgoKD():
         self.points.nhd = nhd
 
 
+    def getDecisionVariables_openclbin(self, deviceID=0, blockSize=1):
+
+        context,prg = openclKernel(DeviceID=deviceID)
+        queue = cl.CommandQueue(context)
+
+        n, k = self.points.n, self.points.k
+
+        LOCALSIZE  = int(blockSize)
+        GLOBALSIZE = (int(n/LOCALSIZE)+1)*LOCALSIZE
+
+        # allocate memery on device for points and decision parameters
+        d_rho     = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.rho.nbytes)
+        d_rhorank = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.rhorank.nbytes)
+        d_nh      = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.nh.nbytes)
+        d_nhd     = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.nhd.nbytes)
+
+        # copy memergy to device
+        d_cords   = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.cords)
+        d_wegiths = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.weights)
+        
+        d_nnbinHead = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.point_idxNNBinsHead)
+        d_nnbinSize = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.point_idxNNBinsSize)
+        d_nnbinList = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.idxNNBinsList)
+        d_idxPointsHead = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.bin_idxPointsHead)
+        d_idxPointsSize = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.bin_idxPointsSize)
+        d_idxPonitsList = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.idxPonitsList)
 
 
-    # def getDecisionVariables_openclbin(self, deviceID=0, blockSize=1):
+        # run KERNEL on device
+        start = timer()
+        prg.rho_openclbin( queue, (GLOBALSIZE,), (LOCALSIZE,),
+                        d_rho, d_cords, d_wegiths, 
+                        d_nnbinHead,
+                        d_nnbinSize,
+                        d_nnbinList,
+                        d_idxPointsHead, 
+                        d_idxPointsSize,
+                        d_idxPonitsList,
+                        # algorithm parameters
+                        n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER
+                        )
+        cl.enqueue_copy(queue, self.points.rho, d_rho)
+        
+        end = timer()
+        self.rhotime = end-start
 
-    #     context,prg = openclKernel(DeviceID=deviceID)
-    #     queue = cl.CommandQueue(context)
+        
+        prg.rhoranknh_opencl(   queue, (GLOBALSIZE,), (LOCALSIZE,),
+                                d_rhorank, d_nh, d_nhd, d_cords, d_rho,
+                                # algorithm paramters
+                                n, k, self.MAXDISTANCE
+                                )
 
-    #     n, k = self.points.n, self.points.k
+        # copy memery from device to host
+        cl.enqueue_copy(queue, self.points.rhorank, d_rhorank)
+        cl.enqueue_copy(queue, self.points.nh, d_nh)
+        cl.enqueue_copy(queue, self.points.nhd, d_nhd)
 
-    #     LOCALSIZE  = int(blockSize)
-    #     GLOBALSIZE = (int(n/LOCALSIZE)+1)*LOCALSIZE
+        # release globle memery on device
+        d_cords.release()
+        d_wegiths.release()
 
-    #     # allocate memery on device for points and decision parameters
-    #     d_rho     = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.rho.nbytes)
-    #     d_rhorank = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.rhorank.nbytes)
-    #     d_nh      = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.nh.nbytes)
-    #     d_nhd     = cl.Buffer(context, cl.mem_flags.READ_WRITE, self.points.nhd.nbytes)
+        d_nnbinHead.release()
+        d_nnbinSize.release()
+        d_nnbinList.release()
+        d_idxPointsHead.release()
+        d_idxPointsSize.release()
+        d_idxPonitsList.release()
 
-    #     # copy memergy to device
-    #     d_cords   = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.cords)
-    #     d_wegiths = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=self.points.weights)
-
-    #     # run KERNEL on device
-    #     prg.rho_opencl( queue, (GLOBALSIZE,), (LOCALSIZE,),
-    #                     d_rho, d_cords, d_wegiths,
-    #                     # algorithm parameters
-    #                     n, k, self.KERNEL_R, self.KERNEL_R_NORM, self.KERNEL_R_POWER
-    #                     )
-
-
-    #     prg.rhoranknh_opencl(   queue, (GLOBALSIZE,), (LOCALSIZE,),
-    #                             d_rhorank, d_nh, d_nhd, d_cords, d_rho,
-    #                             # algorithm paramters
-    #                             n, k, self.MAXDISTANCE
-    #                             )
-
-    #     # copy memery from device to host
-    #     cl.enqueue_copy(queue, self.points.rho, d_rho)
-    #     cl.enqueue_copy(queue, self.points.rhorank, d_rhorank)
-    #     cl.enqueue_copy(queue, self.points.nh, d_nh)
-    #     cl.enqueue_copy(queue, self.points.nhd, d_nhd)
-
-    #     # release globle memery on device
-    #     d_cords.release()
-    #     d_wegiths.release()
-    #     d_rho.release()
-    #     d_rhorank.release()
-    #     d_nh.release()
-    #     d_nhd.release()
-
+        d_rho.release()
+        d_rhorank.release()
+        d_nh.release()
+        d_nhd.release()
 
 
     def getDecisionVariables_numpybin(self):
@@ -314,16 +358,17 @@ class ImageAlgoKD():
         '''
 
         n, k = self.points.n, self.points.k
-        self.points.binPoints(self.KERNEL_R)
 
         ###########################
         # find rho, O(n)
         ###########################
+        start = timer()
+        # get rho by looping over bins
         rho = np.zeros(n)
         # loop over location keys
         for key in self.points.keys:
-            idxPoints,keyNeighbors = self.points.bins[key]
-            idxNeighbors = self.points.getIdxNeighbors(key)
+            idxPoints,keyNeighbors,_ = self.points.bins[key]
+            idxNeighbors = self.points.getIdxNeighborsFromKey(key)
 
             # loop over points in the location key
             for idxPoint in idxPoints:
@@ -340,7 +385,26 @@ class ImageAlgoKD():
                     irho = np.sum(  weight[local] * np.exp( - (dr[local]/self.KERNEL_R_NORM)**self.KERNEL_R_POWER ))
 
                 rho[idxPoint] = irho
+        
 
+
+        # get rho by looping over points
+        # rho = []
+        # for i in range(points.n):
+        #     j = points.getIdxNeighborsFromIdx(i)
+
+        #     icord = points.cords[i]
+        #     jcord = points.cords[j]
+
+        #     jweight = points.weights[j]
+
+        #     dr = np.sqrt( np.sum((jcord-icord)**2, axis=-1) )
+        #     local = dr<KERNEL_R
+        #     irho = np.sum( jweight[local] )
+        #     rho.append(irho)
+        # rho = np.array(rho)
+        end = timer()
+        self.rhotime = end-start
         ###########################
         # find rhorank, O(nlogn) based on mergesort
         ###########################
@@ -358,10 +422,10 @@ class ImageAlgoKD():
 
         # loop over keys
         for key in self.points.keys:
-            idxPoints,stencilKeys = self.points.bins[key]
+            idxPoints,stencilKeys,_ = self.points.bins[key]
 
             # query neighers
-            idxNeighbors = self.points.getIdxNeighbors(key)
+            idxNeighbors = self.points.getIdxNeighborsFromKey(key)
             rhorankNeighbors = rhorank[idxNeighbors]
             cordNeighbors = self.points.cords[idxNeighbors]
             nNeighbors = len(idxNeighbors)
@@ -400,19 +464,6 @@ class ImageAlgoKD():
                  # search NH in globe
                 else:
                     nh[idxPoint],nhd[idxPoint] = self._searchNHGlobal(idxPoint,rhorank)
-
-                    # self.nGlobalSearch += 1
-                    # higher = rhorank < irhorank
-                    # # find higher
-                    # if (True in higher): 
-                    #     dr  = self._norm2Distance(self.points.cords[idxPoint],self.points.cords[higher])
-                    #     idxHighers = np.arange(self.points.n)[higher]
-                    #     nh[idxPoint]  = idxHighers[np.argmin(dr)]
-                    #     nhd[idxPoint] = np.min(dr)
-                    # # no higher are found
-                    # else:
-                    #     nh[idxPoint]= idxPoint
-                    #     nhd[idxPoint] = self.MAXDISTANCE
 
 
 
