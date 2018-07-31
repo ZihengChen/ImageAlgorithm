@@ -12,6 +12,9 @@ For now, the implementation includes three backends: numpy, CUDA and OpenCL.
 | [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | pycuda | Linux | Only NVIDIA GPU |
 | [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | pyopencl | Mac | NVIDIA/AMD/Intel GPU, multi-core CPU |
 
+It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. 
+
+
 For all three backends, two kinds of data structure can be taken in: Flat list and kdbin. KDBin, bins in k-dimention, accommodates points inside spatial bins in k-dimention with dynamic bin distribution and flexible bin capacity. Techniqually it uses hashmap and a set of memory references to obtain nearest neighboring bins and points inside, such that query of neighborhood for each point is O(1) complexity. Performance test shows a strong acceleration in density calculation using KDBin data structure.
 
 | supported data structure |  `rho` Calculation | `rhorank` and `nh` Calculation |
@@ -20,7 +23,12 @@ For all three backends, two kinds of data structure can be taken in: Flat list a
 | [`CUDA`](https://en.wikipedia.org/wiki/CUDA) | list/bin | list |
 | [`OpenCL`](https://en.wikipedia.org/wiki/OpenCL) | list/bin | list |
 
-It has been tested that all three backends give the identical clustering results. Therefore users can feel free to choose whichever faster and easier for their purposes. Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm).
+For density rho calculation, performance tested is shown below.
+<p align=center><img width="60%" src=https://github.com/ZihengChen/ImageAlgorithm/blob/master/plots/performance.png /></p> 
+
+
+
+<!-- Concerning speed performace, acceleration from CUDA/OpenCL may give an up to x20 speed up from CPU when dealing with more than a few thousands of data points. A preliminary speed test of three backends can be found [here](https://galleryziheng.wordpress.com/2017/12/08/gpu-acceleration-of-imaging-algorithm). -->
 
 
 To do list
