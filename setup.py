@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ImageAlgoKD",
-    version="0.0.3",
+    version="0.0.4",
     author="Ziheng Chen",
     author_email="zihengchen2015@u.northwestern.edu",
     description="GPU implementation of clustering by fast search and find density peak.",

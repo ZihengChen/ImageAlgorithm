@@ -1,7 +1,7 @@
 from pylab import *
 import pandas as pd
-from DataStructure import *
 from timeit import default_timer as timer
+from ImageAlgoKD.DataStructure import *
 
 cudaIsAvailable = True
 openclIsAvailable = True
@@ -17,11 +17,11 @@ except ModuleNotFoundError:
     openclIsAvailable = False
 
 if cudaIsAvailable:
-    from ImageAlgoKD_kernel_cuda import *
+    from ImageAlgoKD.ImageAlgoKD_kernel_cuda import *
 
 if openclIsAvailable:
-    from ImageAlgoKD_kernel_opencl import *
-    from Utilities import openclInfo
+    from ImageAlgoKD.ImageAlgoKD_kernel_opencl import *
+    from ImageAlgoKD.Utilities import openclInfo
 
 class ImageAlgoKD():
     def __init__(self,
